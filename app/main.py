@@ -109,6 +109,11 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/")
+def root():
+    return RedirectResponse(url="/mobile")
+
+
 @app.get("/employees/{emp_id}", response_model=EmployeeOut)
 def get_employee(emp_id: str, db: Session = Depends(get_db)):
     emp = db.get(Employee, emp_id)
