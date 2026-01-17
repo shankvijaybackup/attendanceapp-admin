@@ -13,6 +13,17 @@ def seed():
     Base.metadata.create_all(bind=engine)
 
     db = SessionLocal()
+    # 1. Seed Employees
+    if not db.query(Employee).first():
+        print("Seeding Employees...")
+        employees = [
+            {"id": "E1001", "name": "Ananya Gupta", "loc": "Hyderabad", "mgr": "M2001", "email": "ananyagupta@atombanking.onmicrosoft.com", "device": "OnePlus Pad"},
+            {"id": "E1002", "name": "Rahul Sharma", "loc": "Bangalore", "mgr": "M2001"},
+            {"id": "E1003", "name": "Priya Patel", "loc": "Mumbai", "mgr": "M2001"},
+            {"id": "E1004", "name": "Amit Kumar", "loc": "Delhi", "mgr": "M2002"},
+            {"id": "E1005", "name": "Sneha Reddy", "loc": "Hyderabad", "mgr": "M2001"},
+            {"id": "E1006", "name": "Vikram Singh", "loc": "Pune", "mgr": "M2002"},
+            {"id": "E1007", "name": "Neha Gupta", "loc": "Gurgaon", "mgr": "M2003"},
             {"id": "E1008", "name": "Rohan Das", "loc": "Kolkata", "mgr": "M2003"},
             {"id": "E1009", "name": "Kavita Rao", "loc": "Chennai", "mgr": "M2001"},
             {"id": "E1010", "name": "Arjun Nair", "loc": "Kochi", "mgr": "M2002"},
