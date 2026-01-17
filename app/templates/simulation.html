@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation Controls</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 40px;
+            background: #f3f4f6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-normal {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-holiday {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-lockout {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-unlock {
+            background: #2563eb;
+            color: white;
+        }
+
+        .active {
+            ring: 4px solid #000;
+            box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
+        }
+
+        .status-display {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Simulation Controls</h1>
+
+    <div class="card">
+        <div class="status-display">Current State: <span id="currentState">LOADING...</span></div>
+
+        <button onclick="setMode('NORMAL')" class="btn btn-normal">
+            🟢 Normal Operation
+            <div style="font-size:0.8rem; font-weight:400; opacity:0.9">Standard "Check In" works. (Blocks Weekends).
+            </div>
+        </button>
+
+        <button onclick="setMode('UNLOCK_RESTRICTION')" class="btn btn-unlock">
+            🔵 Simulate Atom Unlock (Allow Weekend/Holiday)
+            <div style="font-size:0.8rem; font-weight:400; opacity:0.9">Allows "Check In" even on Holidays/Weekends.
+            </div>
+        </button>
+
+        <button onclick="setMode('HOLIDAY')" class="btn btn-holiday">
+            🟠 Simulate Holiday Rule
+            <div style="font-size:0.8rem; font-weight:400; opacity:0.9">Force Block Check-In. "Restricted Day".</div>
+        </button>
+
+        <button onclick="setMode('LOCKOUT')" class="btn btn-lockout">
+            🔴 Simulate System Lockout
+            <div style="font-size:0.8rem; font-weight:400; opacity:0.9">Blocks Check-In. "Account Locked".</div>
+        </button>
+    </div>
+
+    <script>
+        async function loadState() {
+            const res = await fetch('/api/simulate');
+            const data = await res.json();
+            document.getElementById('currentState').innerText = data.state;
+
+            // simple visual active state
+            document.querySelectorAll('.btn').forEach(b => b.style.opacity = '0.6');
+            if (data.state === 'NORMAL') document.querySelector('.btn-normal').style.opacity = '1';
+            if (data.state === 'HOLIDAY') document.querySelector('.btn-holiday').style.opacity = '1';
+            if (data.state === 'LOCKOUT') document.querySelector('.btn-lockout').style.opacity = '1';
+            if (data.state === 'UNLOCK_RESTRICTION') document.querySelector('.btn-unlock').style.opacity = '1';
+        }
+
+        async function setMode(mode) {
+            await fetch('/api/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ state: mode })
+            });
+            loadState();
+        }
+
+        loadState();
+    </script>
+</body>
+
+</html>

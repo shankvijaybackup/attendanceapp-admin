@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Request {{ req.id }}</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 24px; }
+    .row { display: flex; gap: 24px; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; flex: 1; }
+    h1 { margin-bottom: 6px; }
+    .badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; display: inline-block; }
+    .PENDING_APPROVAL { background: #fff3cd; }
+    .APPROVED { background: #d1ecf1; }
+    .APPLIED { background: #d4edda; }
+    .REJECTED { background: #f8d7da; }
+    .FAILED { background: #f5c6cb; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px 6px; text-align: left; font-size: 14px; }
+    input, textarea { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
+    button { padding: 10px 12px; border-radius: 8px; border: 1px solid #ccc; background: #fafafa; cursor: pointer; }
+    button:hover { background: #f0f0f0; }
+    a { color: #0645ad; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .sub { color: #666; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <a href="/admin">← Back</a>
+  <h1>Request #{{ req.id }} <span class="badge {{ req.status }}">{{ req.status }}</span></h1>
+  <div class="sub">Employee: <b>{{ req.emp_id }}</b> • Approver: <b>{{ req.approver_emp_id or '-' }}</b></div>
+
+  <div class="row" style="margin-top:16px;">
+    <div class="card">
+      <h3>Details</h3>
+      <table>
+        <tr><th>Type</th><td>{{ req.request_type }}</td></tr>
+        <tr><th>Date range</th><td>{{ req.date_start }} → {{ req.date_end }}</td></tr>
+        <tr><th>Current status</th><td>{{ req.current_status or '-' }}</td></tr>
+        <tr><th>Desired status</th><td>{{ req.desired_status or '-' }}</td></tr>
+        <tr><th>Reason category</th><td>{{ req.reason_category }}</td></tr>
+        <tr><th>Reason text</th><td>{{ req.reason_text or '-' }}</td></tr>
+      </table>
+
+      <h3 style="margin-top:16px;">Actions</h3>
+      {% if req.status == 'PENDING_APPROVAL' or req.status == 'DRAFT' %}
+      <div class="row">
+        <form class="card" action="/admin/requests/{{ req.id }}/approve" method="post">
+          <h4>Approve</h4>
+          <label class="sub">Actor (approver emp_id)</label>
+          <input name="actor_emp_id" placeholder="{{ req.approver_emp_id or 'M2001' }}" required />
+          <label class="sub" style="margin-top:8px; display:block;">Comment</label>
+          <textarea name="comment" rows="3" placeholder="Approved"></textarea>
+          <button type="submit" style="margin-top:10px;">Approve & Apply</button>
+        </form>
+
+        <form class="card" action="/admin/requests/{{ req.id }}/reject" method="post">
+          <h4>Reject</h4>
+          <label class="sub">Actor (approver emp_id)</label>
+          <input name="actor_emp_id" placeholder="{{ req.approver_emp_id or 'M2001' }}" required />
+          <label class="sub" style="margin-top:8px; display:block;">Comment</label>
+          <textarea name="comment" rows="3" placeholder="Reason for rejection"></textarea>
+          <button type="submit" style="margin-top:10px;">Reject</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="sub">No actions available for this status.</div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h3>Audit trail</h3>
+      <table>
+        <thead>
+          <tr><th>Time</th><th>Actor</th><th>Action</th><th>Comment</th></tr>
+        </thead>
+        <tbody>
+          {% for a in audit %}
+          <tr>
+            <td>{{ a.created_at }}</td>
+            <td>{{ a.actor_emp_id or '-' }}</td>
+            <td>{{ a.action }}</td>
+            <td>{{ a.comment or '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <p class="sub" style="margin-top:12px;">Tip: validate record updates via API
+        <code>/attendance?emp_id={{ req.emp_id }}&start={{ req.date_start }}&end={{ req.date_end }}</code>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

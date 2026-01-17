@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Attendance Admin Console</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 24px; }
+    h1 { margin-bottom: 8px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #ddd; padding: 10px 8px; text-align: left; }
+    .badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; display: inline-block; }
+    .PENDING_APPROVAL { background: #fff3cd; }
+    .APPROVED { background: #d1ecf1; }
+    .APPLIED { background: #d4edda; }
+    .REJECTED { background: #f8d7da; }
+    .FAILED { background: #f5c6cb; }
+    a { color: #0645ad; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .sub { color: #666; font-size: 13px; margin-bottom: 18px; }
+  </style>
+</head>
+<body>
+  <h1>SAP-like Attendance Admin Console</h1>
+  <div class="sub">Requests • Approvals • Audit</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Employee</th>
+        <th>Type</th>
+        <th>Date Range</th>
+        <th>Approver</th>
+        <th>Status</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in requests %}
+      <tr>
+        <td><a href="/admin/requests/{{ r.id }}">{{ r.id }}</a></td>
+        <td>{{ r.emp_id }}</td>
+        <td>{{ r.request_type }}</td>
+        <td>{{ r.date_start }} → {{ r.date_end }}</td>
+        <td>{{ r.approver_emp_id or '-' }}</td>
+        <td><span class="badge {{ r.status }}">{{ r.status }}</span></td>
+        <td>{{ r.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="sub" style="margin-top:18px;">API docs: <a href="/docs">/docs</a></p>
+</body>
+</html>
