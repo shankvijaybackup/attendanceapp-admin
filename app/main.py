@@ -34,6 +34,15 @@ from .seed import seed
 
 app = FastAPI(title="Attendance Service (SAP Mock)", version="0.1.0")
 
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Optional admin UI assets
 # Optional admin UI assets
 base_dir = os.path.dirname(os.path.abspath(__file__))
