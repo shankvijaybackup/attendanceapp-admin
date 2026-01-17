@@ -48,10 +48,22 @@ def get_db():
         db.close()
 
 
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 @app.on_event("startup")
 def _startup():
-    # Create DB + seed demo data if empty.
-    seed()
+    try:
+        # Create DB + seed demo data if empty.
+        seed()
+        logger.info("Database seeding completed.")
+    except Exception as e:
+        logger.error(f"Error during database seeding: {e}", exc_info=True)
+        # We catch the error so the app can still start
+
 
 
 # -----------------------------
