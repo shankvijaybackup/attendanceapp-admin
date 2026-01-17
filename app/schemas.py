@@ -88,3 +88,17 @@ class AtomicworkSyncIn(BaseModel):
             except Exception:
                 pass
         return values
+
+    @root_validator(pre=True)
+    def parse_flexible_date(cls, values):
+        if isinstance(values, dict) and "date" in values:
+            raw_date = values["date"]
+            if isinstance(raw_date, str):
+                try:
+                    from dateutil import parser
+                    # dayfirst=True ensures DD-MM-YYYY is preferred over MM-DD-YYYY for ambiguous like 01-02-2026
+                    dt = parser.parse(raw_date, dayfirst=True) 
+                    values["date"] = dt.date()
+                except Exception:
+                    pass # Let standard pydantic validation handle or fail it
+        return values
