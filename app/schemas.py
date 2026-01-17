@@ -71,8 +71,6 @@ class RequestWithAuditOut(RequestOut):
 
 
 
-from pydantic import BaseModel, model_validator
-import json
 
 class AtomicworkSyncIn(BaseModel):
     emp_id: str
@@ -80,26 +78,3 @@ class AtomicworkSyncIn(BaseModel):
     status: str
     reason: str
     approval_note: str
-
-    @model_validator(mode='before')
-    @classmethod
-    def parse_payload(cls, data):
-        # 1. Handle Double-Encoded JSON (String -> Dict)
-        if isinstance(data, str):
-            try:
-                data = json.loads(data)
-            except Exception:
-                pass
-        
-        # 2. Handle Flexible Date Formats
-        if isinstance(data, dict) and "date" in data:
-            raw_date = data["date"]
-            if isinstance(raw_date, str):
-                try:
-                    from dateutil import parser
-                    dt = parser.parse(raw_date, dayfirst=True)
-                    data["date"] = dt.date()
-                except Exception:
-                    pass
-        
-        return data

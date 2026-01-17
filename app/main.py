@@ -59,18 +59,49 @@ def api_version():
 
 
 @app.post("/api/atomicwork/sync-attendance", status_code=200)
-def atomicwork_sync(payload: AtomicworkSyncIn, db: Session = Depends(get_db)):
+async def atomicwork_sync(request: Request, db: Session = Depends(get_db)):
     """
     Directly apply attendance changes from Atomicwork.
-    No approval flow needed inside this app; it assumes the request is already approved.
+    Manually parses body to handle double-encoded JSON and flexible dates.
     """
-    # 1. Create Request Record (for audit history)
+    import json
+    from dateutil import parser
+
+    # 1. Raw Body Parsing
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    # 2. Handle Double-Encoding (Stringified JSON)
+    if isinstance(body, str):
+        try:
+            body = json.loads(body)
+        except Exception:
+            pass # fallback to string, validation will likely fail
+
+    # 3. Handle Flexible Dates
+    if isinstance(body, dict) and "date" in body and isinstance(body["date"], str):
+        try:
+            dt = parser.parse(body["date"], dayfirst=True)
+            body["date"] = dt.date()
+        except Exception:
+            pass # Let Pydantic catch invalid date
+
+    # 4. Validate against Schema
+    try:
+        payload = AtomicworkSyncIn(**body)
+    except Exception as e:
+        # Return clearer error than Pydantic default
+        raise HTTPException(status_code=422, detail=f"Validation Error: {str(e)}")
+
+    # 5. Business Logic (Identical to before)
     req = AttendanceChangeRequest(
         emp_id=payload.emp_id,
         request_type="ATOMICWORK_SYNC",
         date_start=payload.date,
         date_end=payload.date,
-        current_status="UNKNOWN", # We don't verify current status in sync
+        current_status="UNKNOWN", 
         desired_status=payload.status,
         reason_category="ATOMICWORK",
         reason_text=payload.reason,
@@ -82,10 +113,11 @@ def atomicwork_sync(payload: AtomicworkSyncIn, db: Session = Depends(get_db)):
     db.add(req)
     db.flush()
 
-    # 2. Add Audit Log
+    # Add Audit Log
     _add_audit(db, req.id, actor_emp_id="ATOMICWORK", action="SYNC_APPLIED", comment=payload.approval_note)
 
-    # 3. Apply Change to Attendance Table
+    # Apply Change to Attendance Table
+    from sqlalchemy import and_
     rec = db.execute(
         select(AttendanceRecord).where(and_(AttendanceRecord.emp_id == payload.emp_id, AttendanceRecord.day == payload.date))
     ).scalars().first()
