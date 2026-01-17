@@ -554,10 +554,18 @@ def admin_employee_detail(request: Request, emp_id: str, db: Session = Depends(g
         ).order_by(AttendanceRecord.day.desc()).limit(30)
     ).scalars().all()
 
+    # Change Requests (Audit Log)
+    start_history = db.execute(
+        select(AttendanceChangeRequest)
+        .where(AttendanceChangeRequest.emp_id == emp_id)
+        .order_by(AttendanceChangeRequest.created_at.desc())
+    ).scalars().all()
+
     return templates.TemplateResponse("employee_detail.html", {
         "request": request, 
         "emp": emp, 
-        "history": history
+        "history": history,
+        "change_requests": start_history
     })
 
 

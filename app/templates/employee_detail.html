@@ -204,6 +204,41 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <h3 style="margin-top: 40px;">Integration Audit Log</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Sync Type</th>
+                    <th>Status</th>
+                    <th>Details (Reason & Approval Notes)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in change_requests %}
+                <tr>
+                    <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ req.request_type }}</td>
+                    <td><span class="badge {{ req.status }}">{{ req.status }}</span></td>
+                    <td>
+                        <div style="font-size: 0.9em;">
+                            <strong>Reason:</strong> {{ req.reason_text or 'N/A' }}
+                        </div>
+                        {% if req.audit_events %}
+                        <div style="margin-top: 4px; color: #555;">
+                            <strong>Latest Note:</strong> {{ (req.audit_events|last).comment }}
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align:center; color:#999;">No audit logs found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
 </body>
