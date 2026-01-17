@@ -98,14 +98,14 @@ def _apply_change(db: Session, req: AttendanceChangeRequest, actor_emp_id: str):
             rec.status = req.desired_status
             rec.last_updated_by = actor_emp_id
             rec.last_updated_at = datetime.utcnow()
-            rec.source_system = "SAP_MOCK"
+            rec.source_system = "ADMIN_FLOW"
         else:
             db.add(
                 AttendanceRecord(
                     emp_id=req.emp_id,
                     day=d,
                     status=req.desired_status,
-                    source_system="SAP_MOCK",
+                    source_system="ADMIN_FLOW",
                     last_updated_by=actor_emp_id,
                     last_updated_at=datetime.utcnow(),
                 )
