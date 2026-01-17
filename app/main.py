@@ -28,6 +28,7 @@ from .schemas import (
     RequestOut,
     RequestActionIn,
     AuditEventOut,
+    AtomicworkSyncIn,
 )
 from .seed import seed
 

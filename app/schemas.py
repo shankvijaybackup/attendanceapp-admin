@@ -67,3 +67,12 @@ class RequestOut(BaseModel):
 
 class RequestWithAuditOut(RequestOut):
     audit_events: List[AuditEventOut] = []
+
+
+class AtomicworkSyncIn(BaseModel):
+    emp_id: str
+    date: date
+    status: str
+    reason: str
+    approval_note: str
+```
